@@ -1,13 +1,26 @@
 const express = require('express');
-const { Company } = require('../models');
+const { Company, Review, User } = require('../models');
 const router = express.Router();
-
 
 router.get('/', async (req, res) => {
   try {
-    const companies = await Company.findAll();
+    const companies = await Company.findAll({
+      include: [
+        {
+          model: Review,
+          as: 'reviews',
+          include: [
+            {
+              model: User,
+              as: 'user',
+            },
+          ],
+        },
+      ],
+    });
     res.json(companies);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Failed to fetch companies' });
   }
 });
@@ -16,20 +29,44 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const company = await Company.findByPk(id);
+    const company = await Company.findOne({
+      where: { id: id },
+      include: [
+        {
+          model: Review,
+          as: 'reviews',
+          include: [
+            {
+              model: User,
+              as: 'user',
+            },
+          ],
+        },
+      ],
+    });
     if (!company) return res.status(404).json({ error: 'Company not found' });
 
     res.json(company);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch company' });
+    res.json( error);
   }
 });
 
 
 router.post('/', async (req, res) => {
   try {
-    const { name, description } = req.body;
-    const company = await Company.create({ name, description });
+    const { name, location, website, verified, email, logoUrl, password, description } = req.body;
+    const company = await Company.create({ name, location, website, verified, email, logoUrl, password, description });
+    res.status(201).json(company);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create company' });
+  }
+});
+
+router.post('/bulk', async (req, res) => {
+  try {
+    const companies = req.body;
+    const company = await Company.bulkCreate(companies);
     res.status(201).json(company);
   } catch (error) {
     res.status(500).json({ error: 'Failed to create company' });
@@ -39,17 +76,23 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description } = req.body;
+    const { name, location, website, verified, email, logoUrl, description } = req.body;
     const company = await Company.findByPk(id);
 
     if (!company) return res.status(404).json({ error: 'Company not found' });
 
     company.name = name;
+    company.location = location;
+    company.website = website;
+    company.verified = verified;
+    company.email = email;
+    company.logoUrl = logoUrl;
     company.description = description;
     await company.save();
 
     res.json(company);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: 'Failed to update company' });
   }
 });

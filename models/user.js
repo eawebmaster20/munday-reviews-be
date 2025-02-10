@@ -18,13 +18,20 @@ module.exports = (sequelize) => {
       allowNull: false,
     },
   });
-
-
+  User.beforeUpdate(async (user) => {
+    if (user.password) {
+      user.password = await bcrypt.hash(user.password, 12);
+    }
+  });
   User.beforeCreate(async (user) => {
     user.password = await bcrypt.hash(user.password, 12);
   });
 
-
+  User.beforeBulkCreate(async (users) => {
+    for (const user of users) {
+      user.password = await bcrypt.hash(user.password, 12);
+    }
+  });
   User.associate = (models) => {
     User.hasMany(models.Review, {
       foreignKey: 'userId',

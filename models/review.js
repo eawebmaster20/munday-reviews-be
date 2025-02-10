@@ -2,6 +2,9 @@ const { DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
   const Review = sequelize.define('Review', {
+    title: {
+      type: DataTypes.TEXT
+    },
     content: {
       type: DataTypes.TEXT,
       allowNull: false,
@@ -12,6 +15,14 @@ module.exports = (sequelize) => {
       validate: {
         min: 1,
         max: 5,
+      },
+      companyId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      userId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
       },
     },
     timestamp: {
