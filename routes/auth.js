@@ -1,5 +1,5 @@
 const express = require('express');
-const { User, Review } = require('../models');
+const { User, Review, Company } = require('../models');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const router = express.Router();
@@ -58,7 +58,24 @@ router.post('/login', async (req, res) => {
     return res.status(401).json({ success: false, message: 'Invalid Username or Pssword' });
     
   }
+});
 
+
+router.post('/login/company', async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const company = await Company.findOne({ where: { email } });
+    // if (!company || !(await bcrypt.compare(password, company.password))) {
+      if (!company) {
+      return res.status(401).json({ success: false, message: 'Invalid Email or Pssword' });
+    }
+    const token = jwt.sign({ id: company.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const payload = { token:token, company: company };
+    return  res.json({success:true, message: 'Login successful', data: payload});
+  } catch (error) {
+    return res.status(401).json({ success: false, message: 'Invalid Email or Pssword' });
+    
+  }
 });
 
 module.exports = router;
