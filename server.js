@@ -10,8 +10,12 @@ dotenv.config();
 
 const app = express();
 app.use(bodyParser.json());
-app.use(cors());
-
+app.use(cors({
+  origin: true,
+  methods: ['GET', 'POST'], 
+  allowedHeaders: ['Content-Type'],
+  credentials: true,
+}));
 const server = http.createServer(app);
 
 const io = new Server(server, {
