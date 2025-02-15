@@ -6,6 +6,10 @@ WORKDIR /home/node/app
 
 COPY package*.json ./
 
+ARG DB_URL
+
+ENV DB_URL=$DB_URL
+
 USER node
 
 RUN npm ci 
